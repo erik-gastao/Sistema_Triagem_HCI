@@ -1,9 +1,8 @@
 import React from 'react';
 import Head from 'next/head';
-import Modal from '../../components/Modal';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../../lib/api';
 import Link from 'next/link';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
@@ -28,7 +27,7 @@ export default function AdminLogin() {
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:8000/api/login', {
+      const response = await api.post('/api/login', {
         username,
         password
       });
@@ -45,25 +44,6 @@ export default function AdminLogin() {
       setError('Erro ao realizar login. Por favor, tente novamente.');
     } finally {
       setLoading(false);
-    }
-  };
-
-    const handleValidarTriagem = async (id) => {
-    try {
-      // Chamada à API para validar a triagem
-      await axios.post(`http://localhost:8000/api/validar-triagem/${id}` );
-      
-      // Atualizar a lista de triagens
-      fetchTriagens();
-      
-      // Mostrar modal de sucesso
-      setModalMessage('Triagem validada com sucesso!');
-      setModalOpen(true);
-    } catch (error) {
-      console.error('Erro ao validar triagem:', error);
-      // Mostrar modal de erro
-      setModalMessage('Erro ao validar triagem. Tente novamente.');
-      setModalOpen(true);
     }
   };
 

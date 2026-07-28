@@ -1,13 +1,12 @@
-# Crie um arquivo .gitignore com o seguinte conteúdo
-echo "# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.env
 venv/
 ENV/
 env/
+.pytest_cache/
 
 # Node.js
 node_modules/
@@ -17,9 +16,21 @@ yarn-error.log
 .pnp/
 .pnp.js
 
-# Banco de dados
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Ambiente
+.env
+.env.local
+.env.*.local
+
+# Banco de dados / dados gerados
 *.db
 *.sqlite3
+backend/chroma_db/
+backend/embedding_cache/
 
 # Logs
 *.log
@@ -32,4 +43,4 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
-*.swo" > .gitignore
+*.swo

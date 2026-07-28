@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../../../lib/api';
 import Modal from '../../../components/Modal';
 
 export default function Dashboard() {
@@ -17,32 +17,18 @@ export default function Dashboard() {
   const [modalMessage, setModalMessage] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if user is logged in
-    const loggedInUser = localStorage.getItem('user');
-    if (!loggedInUser) {
-      router.push('/admin');
-      return;
-    }
-    
-    setUser(loggedInUser);
-    
-    // Load initial data
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      const statsResponse = await axios.get('http://localhost:8000/api/estatisticas');
+      const statsResponse = await api.get('/api/estatisticas');
       setStats(statsResponse.data);
-      
+
       // Load triagens based on active menu
       if (activeMenu === 'dashboard' || activeMenu === 'pendentes') {
-        const triagensResponse = await axios.get('http://localhost:8000/api/triagens?filtro=pendentes');
+        const triagensResponse = await api.get('/api/triagens?filtro=pendentes');
         setTriagens(triagensResponse.data.triagens);
       } else if (activeMenu === 'todas') {
-        const triagensResponse = await axios.get('http://localhost:8000/api/triagens?filtro=todas');
+        const triagensResponse = await api.get('/api/triagens?filtro=todas');
         setTriagens(triagensResponse.data.triagens);
       }
     } catch (err) {
@@ -51,7 +37,23 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeMenu]);
+
+  // Bootstrap client-only: localStorage não existe no prerender, então a sessão
+  // só pode ser lida depois da montagem. Roda uma vez — trocar de menu já
+  // dispara o fetch por handleMenuClick, então não entra nas dependências.
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem('user');
+    if (!loggedInUser) {
+      router.push('/admin');
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessão só é legível após a montagem
+    setUser(loggedInUser);
+    fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- roda só na montagem, de propósito
+  }, []);
 
   const handleMenuClick = async (menu) => {
     setActiveMenu(menu);
@@ -59,10 +61,10 @@ export default function Dashboard() {
     
     try {
       if (menu === 'pendentes') {
-        const response = await axios.get('http://localhost:8000/api/triagens?filtro=pendentes');
+        const response = await api.get('/api/triagens?filtro=pendentes');
         setTriagens(response.data.triagens);
       } else if (menu === 'todas') {
-        const response = await axios.get('http://localhost:8000/api/triagens?filtro=todas');
+        const response = await api.get('/api/triagens?filtro=todas');
         setTriagens(response.data.triagens);
       } else if (menu === 'dashboard') {
         await fetchDashboardData();
@@ -91,7 +93,7 @@ export default function Dashboard() {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:8000/api/validar', {
+      const response = await api.post('/api/validar', {
         triagem_id: validatingTriagem.id,
         validado_por: user,
         feedback

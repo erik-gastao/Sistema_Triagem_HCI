@@ -1,13 +1,13 @@
 import React from 'react';
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
-import Header from '../../../components/Header';
-import Footer from '../../../components/Footer';
-import Button from '../../../components/Button';
-import Card from '../../../components/Card';
-import FormGroup from '../../../components/FormGroup';
+import api from '../../../../lib/api';
+import Header from '../../../../components/Header';
+import Footer from '../../../../components/Footer';
+import Button from '../../../../components/Button';
+import Card from '../../../../components/Card';
+import FormGroup from '../../../../components/FormGroup';
 
 export default function EditUser() {
   const [formData, setFormData] = useState({
@@ -26,25 +26,11 @@ export default function EditUser() {
   const router = useRouter();
   const { id } = router.query;
   
-  // Check if user is logged in and has admin privileges
-  useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (!user || user !== 'admin') {
-      router.push('/admin');
-      return;
-    }
-    
-    // Fetch user data if ID is available
-    if (id) {
-      fetchUserData();
-    }
-  }, [router, id]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8000/api/usuarios/${id}`);
-      
+      const response = await api.get(`/api/usuarios/${id}`);
+
       if (response.data.success) {
         const userData = response.data.usuario;
         setFormData({
@@ -64,7 +50,22 @@ export default function EditUser() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  // Check if user is logged in and has admin privileges
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (!user || user !== 'admin') {
+      router.push('/admin');
+      return;
+    }
+
+    // Fetch user data if ID is available
+    if (id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial marca loading antes do await
+      fetchUserData();
+    }
+  }, [router, id, fetchUserData]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -112,7 +113,7 @@ export default function EditUser() {
         delete dataToSend.password;
       }
       
-      const response = await axios.put(`http://localhost:8000/api/usuarios/${id}`, dataToSend);
+      const response = await api.put(`/api/usuarios/${id}`, dataToSend);
       
       if (response.data.success) {
         setSuccess(true);

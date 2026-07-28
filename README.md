@@ -34,49 +34,67 @@ O Sistema de Triagem HCI é uma aplicação completa para triagem clínica hospi
 ## 🔧 Instalação
 
 ### Pré-requisitos
-- Node.js 16.x ou superior
-- Python 3.9 ou superior
-- Ollama instalado com o modelo Mistral
+- Node.js 20.9 ou superior
+- Python 3.10 ou superior
+- [Ollama](https://ollama.com/download) instalado e em execução
 
-### Backend
+### 1. Ollama
 
 ```bash
-# Navegar para o diretório do backend
+# Baixar o modelo usado na triagem
+ollama pull llama3.2:3b
+
+# Conferir que o servidor responde
+curl http://localhost:11434/api/tags
+```
+
+Em máquinas sem GPU NVIDIA, um modelo 3B responde em ~8-15s por triagem.
+`mistral` (7B) dá respostas melhores, mas leva ~20-40s e exige ~4.5 GB de RAM.
+O modelo é configurável por `OLLAMA_MODEL` — veja `.env.example`.
+
+### 2. Backend
+
+```bash
 cd backend
 
-# Criar ambiente virtual
+# Criar e ativar ambiente virtual
 python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Linux/Mac
 
-# Ativar ambiente virtual
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
+# torch sem CUDA (bem menor; use o índice padrão se tiver GPU NVIDIA)
+pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
 
-# Instalar dependências
+# Demais dependências
 pip install -r requirements.txt
+
+# Configuração
+copy ..\.env.example .env    # Windows
+# cp ../.env.example .env    # Linux/Mac
 
 # Iniciar servidor
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Frontend
+Na primeira execução o modelo de embeddings (`pucpr/biobertpt-clin`, ~500 MB)
+é baixado do Hugging Face. Depois fica em cache local.
+
+### 3. Frontend
 
 ```bash
-# Navegar para o diretório do frontend
 cd frontend
 
-# Instalar dependências
 npm install
+npm run dev          # desenvolvimento em http://localhost:3000
 
-# Iniciar servidor de desenvolvimento
-npm run dev
-
-# Para build de produção
+# Produção
 npm run build
 npm start
 ```
 
-Para instruções detalhadas, consulte o [Manual de Instalação](docs/MANUAL_INSTALACAO.md).
+A URL da API fica em `frontend/.env.local` (`NEXT_PUBLIC_API_URL`). Como é uma
+variável `NEXT_PUBLIC_*`, ela é embutida no bundle em tempo de build — alterá-la
+exige rodar `npm run build` de novo.
 
 ## 🖥️ Uso do Sistema
 
@@ -94,30 +112,35 @@ Para instruções detalhadas, consulte o [Manual de Instalação](docs/MANUAL_IN
 3. Navegue pelo dashboard para visualizar estatísticas
 4. Gerencie usuários e valide triagens pendentes
 
-Para instruções detalhadas, consulte o [Guia de Administradores](docs/GUIA_ADMINISTRADORES.md).
+Para instruções detalhadas, consulte o [Guia de Uso para Administradores](Guia%20de%20Uso%20para%20Administradores%20-%20Sistema%20de%20Triagem%20HCI.md).
+
+## 📚 Documentação Adicional
+
+- [Manual de Instalação](Manual%20de%20Instalação%20-%20Sistema%20de%20Triagem%20HCI.md)
+- [Guia de Uso para Administradores](Guia%20de%20Uso%20para%20Administradores%20-%20Sistema%20de%20Triagem%20HCI.md)
+- [Guia de Desenvolvimento](GUIA_DESENVOLVIMENTO.md)
+- [README do Backend](backend/README.md)
 
 ## 🔍 Estrutura do Projeto
 
 ```
-projeto_melhorado/
-├── backend/               # API e lógica de negócio
-│   ├── main.py            # Ponto de entrada da API
-│   ├── embedding_service.py # Serviço de embeddings
-│   ├── ollama_service.py  # Serviço de comunicação com Ollama
-│   ├── usuarios.py        # Módulo de gestão de usuários
-│   └── requirements.txt   # Dependências Python
+Sistema_Triagem_HCI/
+├── backend/                  # API e lógica de negócio
+│   ├── main.py               # Endpoints, banco SQLite e busca vetorial
+│   ├── embedding_service.py  # Embeddings clínicos (BioBERTpt) + cache
+│   ├── ollama_service.py     # Prompt de Manchester e chamada ao Ollama
+│   ├── usuarios.py           # Gestão de usuários
+│   ├── rotas_usuarios.py     # Rotas de usuários e login
+│   └── requirements.txt      # Dependências Python
 │
-├── frontend/              # Interface de usuário
-│   ├── components/        # Componentes reutilizáveis
-│   ├── pages/             # Páginas da aplicação
-│   ├── styles/            # Estilos CSS
-│   └── package.json       # Dependências JavaScript
+├── frontend/                 # Interface de usuário
+│   ├── components/           # Componentes reutilizáveis
+│   ├── lib/api.js            # Cliente HTTP central (baseURL da API)
+│   ├── pages/                # Páginas da aplicação
+│   ├── styles/               # Estilos CSS
+│   └── package.json          # Dependências JavaScript
 │
-└── docs/                  # Documentação
-    ├── MANUAL_INSTALACAO.md      # Guia de instalação
-    ├── GUIA_ADMINISTRADORES.md   # Manual para administradores
-    ├── NOVAS_FUNCIONALIDADES.md  # Detalhes das funcionalidades
-    └── RELATORIO_TESTES.md       # Resultados dos testes
+└── .env.example              # Modelo de configuração do backend
 ```
 
 ## 🔐 Segurança

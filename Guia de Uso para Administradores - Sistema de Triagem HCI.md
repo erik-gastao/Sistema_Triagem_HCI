@@ -21,26 +21,26 @@ O dashboard apresenta uma visão geral do sistema, incluindo:
 - Total de triagens realizadas
 - Triagens pendentes de validação
 - Triagens validadas
-- Gráficos de distribuição por classificação
-- Atividade recente
+- Lista das 5 triagens pendentes mais recentes, com atalho para validar
 
 ### Navegação
 
-O menu lateral permite acesso a todas as seções administrativas:
+O menu superior (navbar) dá acesso às seções principais:
 
 - **Dashboard**: Visão geral do sistema
-- **Triagens**: Lista de todas as triagens realizadas
-- **Usuários**: Gerenciamento de usuários do sistema
-- **Configurações**: Configurações gerais do sistema
+- **Triagens Pendentes**: Lista de triagens aguardando validação
+- **Todas as Triagens**: Lista completa de triagens realizadas
 - **Sair**: Encerra a sessão administrativa
+
+O gerenciamento de usuários não está no menu — acesse diretamente pela URL
+`http://localhost:3000/admin/users`.
 
 ## Gerenciamento de Usuários
 
 ### Visualizar Usuários
 
-1. No menu lateral, clique em "Usuários"
+1. Acesse `http://localhost:3000/admin/users`
 2. A tabela exibe todos os usuários cadastrados com informações básicas
-3. Utilize a barra de pesquisa para filtrar usuários por nome ou função
 
 ### Adicionar Novo Usuário
 
@@ -71,55 +71,33 @@ O menu lateral permite acesso a todas as seções administrativas:
 
 ### Visualizar Triagens Pendentes
 
-1. No menu lateral, clique em "Triagens"
-2. Por padrão, a visualização mostra todas as triagens
-3. Utilize o filtro "Pendentes" para ver apenas triagens não validadas
+1. No menu superior, clique em "Triagens Pendentes" para ver apenas as não validadas,
+   ou em "Todas as Triagens" para a lista completa
 
 ### Validar uma Triagem
 
-1. Na lista de triagens, clique no botão "Visualizar" ao lado da triagem desejada
+1. Na lista de triagens, selecione a triagem desejada
 2. Revise os detalhes da triagem:
    - Sintomas relatados
    - Classificação sugerida pelo sistema
    - Justificativa e condutas recomendadas
 3. Escolha uma das opções:
-   - **Validar**: Confirma que a triagem está correta
-   - **Ajustar**: Permite modificar a classificação, justificativa ou condutas
-   - **Rejeitar**: Marca a triagem como incorreta
+   - **Validar**: Confirma que a classificação sugerida está correta
+   - **Ajustar**: Informe a classificação correta antes de validar
 
-4. Adicione um comentário explicando sua decisão
-5. Clique em "Salvar Validação"
+4. Adicione um comentário/feedback explicando sua decisão
+5. Confirme a validação
 
 ### Estatísticas de Validação
 
-1. No dashboard, a seção "Precisão do Sistema" mostra estatísticas sobre as validações
-2. O gráfico indica a porcentagem de triagens validadas sem ajustes
-3. A tabela de distribuição mostra a precisão por categoria de classificação
+O dashboard mostra os contadores de total de triagens, validadas e pendentes
+(`GET /api/estatisticas`). Ainda não há gráfico de distribuição por classificação
+nem cálculo de precisão por categoria — funcionalidade planejada, não implementada.
 
 ## Configurações do Sistema
 
-### Configurações Gerais
-
-1. No menu lateral, clique em "Configurações"
-2. Na aba "Geral", você pode ajustar:
-   - Nome da instituição
-   - Logo (upload de nova imagem)
-   - Informações de contato
-   - Mensagem de boas-vindas
-
-### Configurações de Triagem
-
-1. Na aba "Triagem", você pode ajustar:
-   - Tempo máximo para validação de triagens
-   - Notificações automáticas
-   - Parâmetros do modelo de IA (temperatura, top_p)
-
-### Backup e Restauração
-
-1. Na aba "Backup", você pode:
-   - Gerar backup completo do sistema
-   - Restaurar a partir de backup anterior
-   - Configurar backups automáticos
+Ainda não há tela de configurações (nome da instituição, logo, backup/restauração
+etc.) implementada no sistema. Essa seção é planejada para uma versão futura.
 
 ## Boas Práticas
 

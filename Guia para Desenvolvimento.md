@@ -42,13 +42,11 @@ O Sistema de Triagem HCI segue uma arquitetura cliente-servidor com as seguintes
 
 ```
 backend/
-├── main.py                # Ponto de entrada da aplicação
-├── embedding_service.py   # Serviço de embeddings
-├── ollama_service.py      # Serviço de integração com Ollama
-├── auth.py                # Autenticação e autorização
-├── database.py            # Configuração do banco de dados
-├── models.py              # Modelos de dados
-├── rotas_usuarios.py      # Rotas para gerenciamento de usuários
+├── main.py                # Ponto de entrada, endpoints de triagem/validação, banco SQLite
+├── embedding_service.py   # Serviço de embeddings (BioBERTpt) + cache
+├── ollama_service.py      # Serviço de integração com Ollama (prompt de Manchester)
+├── usuarios.py            # Autenticação, hash de senha e CRUD de usuários
+├── rotas_usuarios.py      # Rotas de usuários e login (router `/api`)
 └── requirements.txt       # Dependências do projeto
 ```
 
@@ -80,18 +78,20 @@ frontend/
 ### Configuração do Ambiente de Desenvolvimento
 
 1. **Requisitos**
-   - Node.js (v16+)
-   - Python (v3.9+)
-   - Ollama com modelo Mistral
+   - Node.js 20.9+
+   - Python 3.10+
+   - Ollama com modelo configurado em `OLLAMA_MODEL` (padrão `llama3.2:3b`)
    - Git (opcional)
 
 2. **Configuração do Backend**
    ```bash
    cd backend
    python -m venv venv
-   source venv/bin/activate  # No Windows: venv\Scripts\activate
+   source venv/bin/activate  # No Windows (cmd): venv\Scripts\activate
    pip install -r requirements.txt
    ```
+
+   > **Nota (Windows PowerShell):** `source` não existe no PowerShell. Use `venv\Scripts\Activate.ps1`. Se aparecer erro de política de execução, rode antes: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 
 3. **Configuração do Frontend**
    ```bash
@@ -137,11 +137,10 @@ frontend/
 
 #### Novos Endpoints na API
 
-1. Defina o modelo de dados em `models.py`
+1. Defina o modelo de dados (Pydantic `BaseModel`) em `main.py` ou `rotas_usuarios.py`
 2. Implemente a lógica de negócio
-3. Adicione o endpoint em `main.py` ou em um router específico
+3. Adicione o endpoint em `main.py` ou no router de `rotas_usuarios.py`
 4. Documente o endpoint com comentários OpenAPI
-5. Atualize os testes
 
 #### Novos Componentes Frontend
 
@@ -152,7 +151,7 @@ frontend/
 
 ### Integração com Modelos de IA
 
-O sistema utiliza o Ollama com o modelo Mistral para processamento de linguagem natural. Para integrar outros modelos:
+O sistema utiliza o Ollama para processamento de linguagem natural (modelo configurável em `OLLAMA_MODEL`, padrão `llama3.2:3b`). Para integrar outros modelos:
 
 1. Crie um novo serviço similar ao `ollama_service.py`
 2. Implemente os métodos de geração e processamento de respostas
@@ -162,39 +161,16 @@ O sistema utiliza o Ollama com o modelo Mistral para processamento de linguagem 
 
 O sistema utiliza SQLite para armazenamento de dados relacionais e ChromaDB para armazenamento de embeddings. Para modificar o esquema:
 
-1. Atualize as funções de inicialização em `main.py` ou `database.py`
+1. Atualize as funções de inicialização em `main.py` (tabelas SQLite) ou `usuarios.py`
 2. Implemente migrações se necessário
-3. Atualize os modelos de dados em `models.py`
 
 ## Testes
 
-### Testes de Backend
+O projeto ainda não possui suíte de testes automatizados (sem `pytest`/Jest configurados
+e sem pasta `docs/` com scripts de teste). Ao adicionar testes:
 
-Execute os testes com pytest:
-
-```bash
-cd backend
-pytest
-```
-
-### Testes de Frontend
-
-Execute os testes com Jest:
-
-```bash
-cd frontend
-npm test
-```
-
-### Testes de Integração
-
-Os scripts de teste de integração estão disponíveis em `docs/`:
-
-```bash
-cd docs
-python api_tests.py
-python frontend_tests.py
-```
+- **Backend**: usar `pytest`, arquivos `test_*.py` em `backend/`
+- **Frontend**: usar Jest/React Testing Library
 
 ## Deployment
 

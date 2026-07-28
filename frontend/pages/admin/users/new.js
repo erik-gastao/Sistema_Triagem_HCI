@@ -2,12 +2,12 @@ import React from 'react';
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import Button from '../../components/Button';
-import Card from '../../components/Card';
-import FormGroup from '../../components/FormGroup';
+import api from '../../../lib/api';
+import Header from '../../../components/Header';
+import Footer from '../../../components/Footer';
+import Button from '../../../components/Button';
+import Card from '../../../components/Card';
+import FormGroup from '../../../components/FormGroup';
 
 export default function UserRegistration() {
   const [formData, setFormData] = useState({
@@ -81,7 +81,7 @@ export default function UserRegistration() {
     
     try {
       // Endpoint será implementado no backend
-      const response = await axios.post('http://localhost:8000/api/usuarios', {
+      const response = await api.post('/api/usuarios', {
         name: formData.name,
         username: formData.username,
         password: formData.password,

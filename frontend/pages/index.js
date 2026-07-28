@@ -1,7 +1,7 @@
 import React from 'react';
 import Head from 'next/head';
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Card from '../components/Card';
@@ -95,7 +95,7 @@ export default function Home() {
     
     try {
       // Usar diretamente o endpoint de triagem
-      const response = await axios.post('http://localhost:8000/api/triagem', {
+      const response = await api.post('/api/triagem', {
         sintomas: symptoms
       });
       

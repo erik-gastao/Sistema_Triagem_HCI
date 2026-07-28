@@ -5,32 +5,32 @@ Este manual detalha o processo de instalação e configuração do Sistema de Tr
 ## Requisitos do Sistema
 
 ### Frontend
-- Node.js 16.x ou superior
-- NPM 7.x ou superior
+- Node.js 20.9 ou superior
+- NPM 10.x ou superior
 - Navegador moderno (Chrome, Firefox, Edge, Safari)
 
 ### Backend
-- Python 3.9 ou superior
+- Python 3.10 ou superior
 - Pip (gerenciador de pacotes Python)
 - SQLite 3
-- Ollama instalado localmente com o modelo Mistral disponível
+- Ollama instalado localmente com o modelo configurado em `OLLAMA_MODEL` (padrão `llama3.2:3b`)
 
 ## Estrutura do Projeto
 
 O sistema está dividido em duas partes principais:
 
 ```
-projeto_melhorado/
+Sistema_Triagem_HCI/
 ├── frontend/         # Aplicação Next.js para interface do usuário
 ├── backend/          # API FastAPI para processamento de triagem e usuários
-└── docs/             # Documentação e scripts de teste
+└── .env.example      # Modelo de configuração do backend
 ```
 
 ## 1. Instalação do Backend
 
 1. Navegue até a pasta do backend:
    ```bash
-   cd sistema_triagem/backend
+   cd Sistema_Triagem_HCI/backend
    ```
 
 2. Crie e ative um ambiente virtual Python:
@@ -39,19 +39,20 @@ projeto_melhorado/
    source venv/bin/activate  # No Windows: venv\Scripts\activate
    ```
 
-3. Instale as dependências:
+3. Instale as dependências (torch sem CUDA é bem menor; use o índice padrão se tiver GPU NVIDIA):
    ```bash
+   pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
    pip install -r requirements.txt
    ```
 
-4. Verifique se o Ollama está instalado e o modelo Mistral está disponível:
+4. Verifique se o Ollama está instalado e o modelo está disponível:
    ```bash
    # Instalar Ollama (se necessário)
    curl -fsSL https://ollama.com/install.sh | sh
-   
-   # Baixar o modelo Mistral
-   ollama pull mistral
-   
+
+   # Baixar o modelo usado na triagem
+   ollama pull llama3.2:3b
+
    # Iniciar o serviço Ollama
    ollama serve
    ```
@@ -65,7 +66,7 @@ projeto_melhorado/
 
 1. Navegue até a pasta do frontend:
    ```bash
-   cd sistema_triagem/frontend
+   cd Sistema_Triagem_HCI/frontend
    ```
 
 2. Instale as dependências:
@@ -88,19 +89,23 @@ projeto_melhorado/
 
 ### Configuração do Backend
 
-O backend utiliza um arquivo `.env` para configurações. Crie um arquivo `.env` na pasta `backend` com o seguinte conteúdo:
+O backend utiliza um arquivo `.env` para configurações. Copie `.env.example` (na raiz
+do projeto) para `backend/.env` e ajuste conforme necessário:
 
 ```
-# Configurações do servidor
-PORT=8000
-HOST=0.0.0.0
-
-# Configurações do Ollama
+# ---------- Ollama ----------
 OLLAMA_URL=http://localhost:11434
-OLLAMA_MODEL=mistral
+OLLAMA_MODEL=llama3.2:3b
 
-# Configurações do banco de dados
+# ---------- Backend ----------
+CORS_ORIGINS=http://localhost:3000
+N_CASOS_SIMILARES=3
+EMBEDDING_MODEL=pucpr/biobertpt-clin
+
+# Caminhos de dados (relativos a backend/)
 DB_PATH=./validacao_triagem.db
+CHROMA_PATH=./chroma_db
+EMBEDDING_CACHE_DIR=./embedding_cache
 ```
 
 ### Configuração do Frontend
@@ -139,10 +144,14 @@ Se o sistema não conseguir se comunicar com o Ollama, verifique:
 
 1. Se o serviço Ollama está em execução:
    ```bash
+   # Linux/Mac
    ps aux | grep ollama
+
+   # Windows (PowerShell)
+   Get-Process ollama -ErrorAction SilentlyContinue
    ```
 
-2. Se o modelo Mistral está disponível:
+2. Se o modelo configurado em `OLLAMA_MODEL` está disponível:
    ```bash
    ollama list
    ```

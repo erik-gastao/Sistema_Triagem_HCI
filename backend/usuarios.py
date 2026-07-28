@@ -3,7 +3,10 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 import hashlib
+import os
 import uuid
+
+DB_PATH = os.getenv("DB_PATH", "./validacao_triagem.db")
 
 # Modelo de dados para usuários
 class Usuario(BaseModel):
@@ -33,7 +36,7 @@ def verify_password(stored_password: str, provided_password: str) -> bool:
 # Inicialização da tabela de usuários
 def init_users_db():
     """Inicializa a tabela de usuários no banco de dados"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -85,7 +88,7 @@ def init_users_db():
 # Funções para gerenciamento de usuários
 def criar_usuario(usuario: Usuario) -> dict:
     """Cria um novo usuário no banco de dados"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     try:
@@ -126,7 +129,7 @@ def criar_usuario(usuario: Usuario) -> dict:
 
 def listar_usuarios() -> list:
     """Lista todos os usuários cadastrados"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     cursor.execute("SELECT id, nome, username, email, role, data_criacao, ativo FROM usuarios ORDER BY nome")
@@ -150,7 +153,7 @@ def listar_usuarios() -> list:
 
 def obter_usuario(usuario_id: str) -> dict:
     """Obtém os detalhes de um usuário específico"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     cursor.execute("SELECT id, nome, username, email, role, data_criacao, ativo FROM usuarios WHERE id = ?", (usuario_id,))
@@ -176,7 +179,7 @@ def obter_usuario(usuario_id: str) -> dict:
 
 def atualizar_usuario(usuario_id: str, dados: dict) -> dict:
     """Atualiza os dados de um usuário"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     try:
@@ -237,7 +240,7 @@ def atualizar_usuario(usuario_id: str, dados: dict) -> dict:
 
 def excluir_usuario(usuario_id: str) -> dict:
     """Exclui um usuário do sistema"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     try:
@@ -261,7 +264,7 @@ def excluir_usuario(usuario_id: str) -> dict:
 
 def autenticar_usuario(username: str, password: str) -> dict:
     """Autentica um usuário com base no username e senha"""
-    conn = sqlite3.connect('./validacao_triagem.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     cursor.execute("SELECT id, username, password, role, ativo FROM usuarios WHERE username = ?", (username,))

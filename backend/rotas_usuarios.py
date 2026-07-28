@@ -88,7 +88,7 @@ async def obter_detalhes_usuario(usuario_id: str):
 async def atualizar_dados_usuario(usuario_id: str, dados: UsuarioUpdateRequest):
     """Atualiza os dados de um usuário"""
     try:
-        resultado = atualizar_usuario(usuario_id, dados.dict(exclude_unset=True))
+        resultado = atualizar_usuario(usuario_id, dados.model_dump(exclude_unset=True))
         
         if not resultado["success"]:
             raise HTTPException(status_code=400, detail=resultado["message"])

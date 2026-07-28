@@ -1,12 +1,12 @@
 import React from 'react';
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import Button from '../../components/Button';
-import Card from '../../components/Card';
+import api from '../../../lib/api';
+import Header from '../../../components/Header';
+import Footer from '../../../components/Footer';
+import Button from '../../../components/Button';
+import Card from '../../../components/Card';
 
 export default function UsersList() {
   const [users, setUsers] = useState([]);
@@ -14,22 +14,10 @@ export default function UsersList() {
   const [error, setError] = useState('');
   const router = useRouter();
   
-  // Check if user is logged in and has admin privileges
-  useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (!user || user !== 'admin') {
-      router.push('/admin');
-      return;
-    }
-    
-    // Fetch users
-    fetchUsers();
-  }, [router]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8000/api/usuarios');
+      const response = await api.get('/api/usuarios');
       setUsers(response.data.usuarios);
       setError('');
     } catch (err) {
@@ -38,7 +26,19 @@ export default function UsersList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Check if user is logged in and has admin privileges
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (!user || user !== 'admin') {
+      router.push('/admin');
+      return;
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial marca loading antes do await
+    fetchUsers();
+  }, [router, fetchUsers]);
 
   const handleDelete = async (userId) => {
     if (!confirm('Tem certeza que deseja excluir este usuário?')) {
@@ -46,7 +46,7 @@ export default function UsersList() {
     }
     
     try {
-      const response = await axios.delete(`http://localhost:8000/api/usuarios/${userId}`);
+      const response = await api.delete(`/api/usuarios/${userId}`);
       
       if (response.data.success) {
         // Atualizar lista de usuários

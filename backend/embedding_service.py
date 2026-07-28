@@ -22,15 +22,16 @@ class EmbeddingService:
     Serviço otimizado para geração e gerenciamento de embeddings para o sistema de triagem.
     """
     
-    def __init__(self, model_name: str = "pucpr/biobertpt-clin", cache_dir: str = "./embedding_cache"):
+    def __init__(self, model_name: Optional[str] = None, cache_dir: Optional[str] = None):
         """
         Inicializa o serviço de embeddings.
-        
+
         Args:
             model_name: Nome do modelo de embeddings a ser utilizado
             cache_dir: Diretório para cache de embeddings
         """
-        self.model_name = model_name
+        self.model_name = model_name or os.getenv("EMBEDDING_MODEL", "pucpr/biobertpt-clin")
+        cache_dir = cache_dir or os.getenv("EMBEDDING_CACHE_DIR", "./embedding_cache")
         self.cache_dir = cache_dir
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.embedding_cache = {}
@@ -45,9 +46,9 @@ class EmbeddingService:
         
         # Inicializar modelo e tokenizer
         try:
-            logger.info(f"Carregando modelo {model_name}...")
-            self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModel.from_pretrained(model_name)
+            logger.info(f"Carregando modelo {self.model_name}...")
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model = AutoModel.from_pretrained(self.model_name)
             self.model = self.model.to(self.device)
             self.model.eval()  # Modo de avaliação para inferência
             logger.info(f"Modelo carregado com sucesso no dispositivo: {self.device}")
